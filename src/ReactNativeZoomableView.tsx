@@ -47,6 +47,7 @@ class ReactNativeZoomableView extends Component<
   doubleTapFirstTapReleaseTimestamp: number;
 
   static defaultProps = {
+    zoomToCenter: false,
     zoomEnabled: true,
     initialZoom: 1,
     initialOffsetX: 0,
@@ -828,7 +829,7 @@ class ReactNativeZoomableView extends Component<
    * @private
    */
   _handleDoubleTap(e: GestureResponderEvent) {
-    const { onDoubleTapBefore, onDoubleTapAfter, doubleTapZoomToCenter } =
+    const { onDoubleTapBefore, onDoubleTapAfter, doubleTapZoomToCenter, zoomToCenter } =
       this.props;
 
     onDoubleTapBefore?.(e, this._getZoomableViewEventObject());
@@ -844,8 +845,14 @@ class ReactNativeZoomableView extends Component<
 
     // if doubleTapZoomToCenter enabled -> always zoom to center instead
     if (doubleTapZoomToCenter) {
-      zoomPositionCoordinates.x = 0;
-      zoomPositionCoordinates.y = 0;
+      const center = {
+        x: this.state.originalWidth / 2 + this.state.originalPageX / 2,
+        y: this.state.originalHeight / 2 + this.state.originalPageY / 2
+      };
+      const x = zoomToCenter ? center.x : 0;
+      const y = zoomToCenter ? center.y : 0;
+      zoomPositionCoordinates.x = x;
+      zoomPositionCoordinates.y = y;
     }
 
     this._zoomToLocation(
@@ -946,7 +953,15 @@ class ReactNativeZoomableView extends Component<
     )
       return false;
 
-    await this._zoomToLocation(0, 0, newZoomLevel);
+    const center = {
+      x: this.state.originalWidth / 2 + this.state.originalPageX / 2,
+      y: this.state.originalHeight / 2 + this.state.originalPageY / 2
+    };
+
+    const x = this.props.zoomToCenter ? center.x : 0;
+    const y = this.props.zoomToCenter ? center.y : 0;
+
+    await this._zoomToLocation(x, y, newZoomLevel);
     return true;
   }
 
